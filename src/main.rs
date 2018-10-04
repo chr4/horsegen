@@ -8,6 +8,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 use std::process;
 
+mod wordlist;
+
 fn main() {
     let args = App::new("bitwords")
         .version("0.1")
@@ -35,24 +37,41 @@ fn main() {
         ).get_matches();
 
     let passphrase_length = value_t!(args.value_of("passphrase_length"), usize).unwrap_or(24);
-    let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(6);
+    let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(6); // TODO: only works with wordlist
     let capitalize = value_t!(args.value_of("capitalize"), bool).unwrap_or(true);
-    let wordlist_filename = args.value_of("wordlist").unwrap_or("wordlist");
 
-    let wordlist = match read_wordlist(wordlist_filename, max_word_length) {
-        Ok(list) => list,
-        Err(e) => {
-            eprintln!("Error reading in wordlist: {}", e);
-            process::exit(1);
-        }
-    };
+    // If a wordlist is specified, read it in
+    let mut wordlist_file: Vec<String> = vec![];
+    if args.is_present("wordlist") {
+        let wordlist_filename = args.value_of("wordlist").unwrap_or("");
+        wordlist_file = match read_wordlist(wordlist_filename, max_word_length) {
+            Ok(list) => list,
+            Err(e) => {
+                eprintln!("Error reading in wordlist: {}", e);
+                process::exit(1);
+            }
+        };
+    }
 
     // Choose random words from the wordlist and append them to the passphrase until length is met
     let mut pwd: Vec<String> = vec![];
     while pwd.join("-").len() < passphrase_length {
-        let word_str = match rand::thread_rng().choose(&wordlist) {
-            Some(s) => s,
-            None => continue,
+        let word_str = if args.is_present("wordlist") {
+            match rand::thread_rng().choose(&wordlist_file) {
+                Some(s) => s,
+                None => continue,
+            }
+        } else {
+            match rand::thread_rng().choose(&wordlist::WORDLIST) {
+                Some(s) => {
+                    // Filter out too long words
+                    if s.len() > max_word_length {
+                        continue;
+                    }
+                    *s
+                }
+                None => continue,
+            }
         };
 
         // Capitalize word if capitalize flag was set and add to list
