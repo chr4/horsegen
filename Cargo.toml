@@ -5,3 +5,4 @@ authors = ["Chris Aumann <me@chr4.org>"]
 
 [dependencies]
 clap = "2"
+rand = "0"
