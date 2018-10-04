@@ -11,34 +11,54 @@ use std::process;
 mod wordlist;
 
 fn main() {
-    let args = App::new("bitwords")
+    let args = App::new("Correct Horse Battery Staple --- Password Generator")
         .version("0.1")
         .about("Generate secure passphrases that are easy to type and remember")
         .author("Chris Aumann <me@chr4.org>")
-        .arg(Arg::with_name("passphrase_length").help("passphrase length"))
+        .arg(Arg::with_name("min_passphrase_length").help("Min passphrase length [default: 24]"))
         .arg(
-            Arg::with_name("max_word_length")
-                .short("l")
-                .long("length")
-                .help("Max word length")
+            Arg::with_name("min_words")
+                .short("w")
+                .long("min-words")
+                .help("Min number of words [default: 4]")
                 .takes_value(true),
         ).arg(
-            Arg::with_name("capitalize")
+            Arg::with_name("max_word_length")
+                .short("l")
+                .long("max-word-length")
+                .help("Max word length [default: 6]")
+                .takes_value(true),
+        ).arg(
+            Arg::with_name("no_capitalize")
                 .short("A")
                 .long("no-capitalize")
-                .help("Do not capitalize words")
-                .takes_value(true),
+                .help("Do not capitalize words [default: true]"),
         ).arg(
             Arg::with_name("wordlist")
                 .short("f")
                 .long("wordlist")
-                .help("Specify custom wordlist")
+                .help("Specify custom wordlist [default: built-in]")
                 .takes_value(true),
+        ).arg(
+            Arg::with_name("seperator")
+                .short("s")
+                .long("seperator")
+                .help("Use custom seperator [default: '-']")
+                .takes_value(true),
+        ).arg(
+            Arg::with_name("no_append_number")
+                .short("n")
+                .long("no-append-number")
+                .help("Do not append a random number at the end"),
         ).get_matches();
 
-    let passphrase_length = value_t!(args.value_of("passphrase_length"), usize).unwrap_or(24);
-    let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(6); // TODO: only works with wordlist
-    let capitalize = value_t!(args.value_of("capitalize"), bool).unwrap_or(true);
+    let min_passphrase_length =
+        value_t!(args.value_of("min_passphrase_length"), usize).unwrap_or(24);
+    let min_words = value_t!(args.value_of("min_words"), usize).unwrap_or(4);
+    let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(6);
+    let append_number = !args.is_present("no_append_number");
+    let capitalize = !args.is_present("no_capitalize");
+    let seperator = args.value_of("seperator").unwrap_or("-");
 
     // If a wordlist is specified, read it in
     let mut wordlist_file: Vec<String> = vec![];
@@ -55,7 +75,7 @@ fn main() {
 
     // Choose random words from the wordlist and append them to the passphrase until length is met
     let mut pwd: Vec<String> = vec![];
-    while pwd.join("-").len() < passphrase_length {
+    while pwd.len() < min_words || pwd.join(seperator).len() < min_passphrase_length {
         let word_str = if args.is_present("wordlist") {
             match rand::thread_rng().choose(&wordlist_file) {
                 Some(s) => s,
@@ -74,7 +94,7 @@ fn main() {
             }
         };
 
-        // Capitalize word if capitalize flag was set and add to list
+        // Capitalize word if --capitalize was set and it add to list
         pwd.push(if capitalize {
             word_str.to_string().to_capitalized()
         } else {
@@ -82,8 +102,13 @@ fn main() {
         });
     }
 
+    // Append a random number from 0-9 if --add-number was specified
+    if append_number {
+        pwd.push(rand::thread_rng().gen_range(0, 10).to_string());
+    }
+
     // Concatinate words with dashes and print the passphrase!
-    println!("{}", pwd.join("-"))
+    println!("{}", pwd.join(seperator))
 }
 
 // Read in a wordlist, select all words that are longer than max_word_length characters.
