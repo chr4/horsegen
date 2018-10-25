@@ -1,8 +1,7 @@
-#[macro_use]
 extern crate clap;
 extern crate rand;
 
-use clap::{App, Arg};
+use clap::{value_t, App, Arg};
 use rand::Rng;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
