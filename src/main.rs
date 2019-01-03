@@ -16,13 +16,6 @@ fn main() {
         .author("Chris Aumann <me@chr4.org>")
         .arg(Arg::with_name("min_passphrase_length").help("Min passphrase length [default: 24]"))
         .arg(
-            Arg::with_name("min_words")
-                .short("w")
-                .long("min-words")
-                .help("Min number of words [default: 4]")
-                .takes_value(true),
-        )
-        .arg(
             Arg::with_name("max_word_length")
                 .short("l")
                 .long("max-word-length")
@@ -59,7 +52,7 @@ fn main() {
 
     let min_passphrase_length =
         value_t!(args.value_of("min_passphrase_length"), usize).unwrap_or(24);
-    let min_words = value_t!(args.value_of("min_words"), usize).unwrap_or(4);
+    let min_words = min_passphrase_length / 5;
     let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(6);
     let append_number = !args.is_present("no_append_number");
     let capitalize = !args.is_present("no_capitalize");
