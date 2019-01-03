@@ -21,35 +21,41 @@ fn main() {
                 .long("min-words")
                 .help("Min number of words [default: 4]")
                 .takes_value(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("max_word_length")
                 .short("l")
                 .long("max-word-length")
                 .help("Max word length [default: 6]")
                 .takes_value(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("no_capitalize")
                 .short("A")
                 .long("no-capitalize")
                 .help("Do not capitalize words [default: true]"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("wordlist")
                 .short("f")
                 .long("wordlist")
                 .help("Specify custom wordlist [default: built-in]")
                 .takes_value(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("seperator")
                 .short("s")
                 .long("seperator")
                 .help("Use custom seperator [default: '-']")
                 .takes_value(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("no_append_number")
                 .short("n")
                 .long("no-append-number")
                 .help("Do not append a random number at the end"),
-        ).get_matches();
+        )
+        .get_matches();
 
     let min_passphrase_length =
         value_t!(args.value_of("min_passphrase_length"), usize).unwrap_or(24);
@@ -116,8 +122,8 @@ fn read_wordlist(filename: &str, max_word_length: usize) -> Result<Vec<String>> 
     let file = File::open(filename)?;
     Ok(BufReader::new(file)
         .lines()
-        .filter_map(|result| result.ok())       // Skip erroneous lines
-        .filter(|l| !l.starts_with("#"))        // Skip comments
+        .filter_map(|result| result.ok()) // Skip erroneous lines
+        .filter(|l| !l.starts_with("#")) // Skip comments
         .filter(|l| l.len() <= max_word_length) // Filter out too long words
         .collect::<Vec<_>>())
 }
