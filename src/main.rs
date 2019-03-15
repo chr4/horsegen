@@ -36,10 +36,10 @@ fn main() {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("seperator")
-                .short("s")
-                .long("seperator")
-                .help("Use custom seperator [default: '-']")
+            Arg::with_name("delimiter")
+                .short("d")
+                .long("delimiter")
+                .help("Use custom delimiter [default: '-']")
                 .takes_value(true),
         )
         .arg(
@@ -56,7 +56,7 @@ fn main() {
     let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(6);
     let append_number = !args.is_present("no_append_number");
     let capitalize = !args.is_present("no_capitalize");
-    let seperator = args.value_of("seperator").unwrap_or("-");
+    let delimiter = args.value_of("delimiter").unwrap_or("-");
 
     // If a wordlist is specified, read it in
     let mut wordlist_file: Vec<String> = vec![];
@@ -73,7 +73,7 @@ fn main() {
 
     // Choose random words from the wordlist and append them to the passphrase until length is met
     let mut pwd: Vec<String> = vec![];
-    while pwd.len() < min_words || pwd.join(seperator).len() < min_passphrase_length {
+    while pwd.len() < min_words || pwd.join(delimiter).len() < min_passphrase_length {
         let word_str = if args.is_present("wordlist") {
             match rand::thread_rng().choose(&wordlist_file) {
                 Some(s) => s,
@@ -106,7 +106,7 @@ fn main() {
     }
 
     // Concatinate words with dashes and print the passphrase!
-    println!("{}", pwd.join(seperator))
+    println!("{}", pwd.join(delimiter))
 }
 
 // Read in a wordlist, select all words that are longer than max_word_length characters.
