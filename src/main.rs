@@ -2,7 +2,8 @@ extern crate clap;
 extern crate rand;
 
 use clap::{value_t, App, Arg};
-use rand::Rng;
+use rand::seq::SliceRandom;
+use rand::{thread_rng, Rng};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 use std::process;
@@ -73,14 +74,15 @@ fn main() {
 
     // Choose random words from the wordlist and append them to the passphrase until length is met
     let mut pwd: Vec<String> = vec![];
+    let mut rng = thread_rng();
     while pwd.len() < min_words || pwd.join(delimiter).len() < min_passphrase_length {
         let word_str = if args.is_present("wordlist") {
-            match rand::thread_rng().choose(&wordlist_file) {
+            match wordlist_file.choose(&mut rng) {
                 Some(s) => s,
                 None => continue,
             }
         } else {
-            match rand::thread_rng().choose(&wordlist::WORDLIST) {
+            match wordlist::WORDLIST.choose(&mut rng) {
                 Some(s) => {
                     // Filter out too long words
                     if s.len() > max_word_length {
@@ -102,7 +104,7 @@ fn main() {
 
     // Append a random number from 0-9 if --add-number was specified
     if append_number {
-        pwd.push(rand::thread_rng().gen_range(0, 10).to_string());
+        pwd.push(thread_rng().gen_range(0, 10).to_string());
     }
 
     // Concatinate words with dashes and print the passphrase!
