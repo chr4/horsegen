@@ -10,7 +10,7 @@ Words in built-in database: `80549`
 ## Usage
 
 ```
-Correct Horse Battery Staple --- Password Generator 0.1
+Correct Horse Battery Staple --- Password Generator 0.2
 Chris Aumann <me@chr4.org>
 Generate secure passphrases that are easy to type and remember
 
@@ -26,7 +26,7 @@ FLAGS:
 OPTIONS:
     -l, --max-word-length <max_word_length>    Max word length [default: 6]
     -w, --min-words <min_words>                Min number of words [default: 4]
-    -s, --seperator <seperator>                Use custom seperator [default: '-']
+    -d, --delimiter <delimiter>                Use custom delimiter [default: '-']
     -f, --wordlist <wordlist>                  Specify custom wordlist [default: built-in]
 
 ARGS:
