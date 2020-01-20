@@ -28,7 +28,7 @@ fn main() {
             Arg::with_name("max_word_length")
                 .short("l")
                 .long("max-word-length")
-                .help("Max word length [default: 6]")
+                .help("Max word length [default: 10]")
                 .takes_value(true),
         )
         .arg(
@@ -41,7 +41,7 @@ fn main() {
             Arg::with_name("wordlist")
                 .short("f")
                 .long("wordlist")
-                .help("Specify custom wordlist [default: built-in]")
+                .help("Specify custom wordlist [default: built-in EFF]")
                 .takes_value(true),
         )
         .arg(
