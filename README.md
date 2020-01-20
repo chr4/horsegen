@@ -1,34 +1,34 @@
 # Horsegen - Secure passphrases that are easy to type and remember
 
-Horsegen is a console password generator using the famous "correct horse
-battert staple" schema (hence the name).
+Horsegen is a console password generator using the famous "correct horse battert staple" schema (hence the name).
 
 It is written in [Rust](https://rust-lang.org) and runs on Linux and macOS.
 
-Words in built-in database: `80549`
+Uses the (built-in) EFF diceword wordlist by default, but can be used with other wordlists as well.
 
 ## Usage
 
 ```
-Correct Horse Battery Staple --- Password Generator 0.2
+Correct Horse Battery Staple --- Password Generator 0.3
 Chris Aumann <me@chr4.org>
 Generate secure passphrases that are easy to type and remember
 
 USAGE:
-    horsegen [FLAGS] [OPTIONS] [min_passphrase_length]
+    horsegen [FLAGS] [OPTIONS] [words]
 
 FLAGS:
     -h, --help                Prints help information
     -n, --no-append-number    Do not append a random number at the end
     -A, --no-capitalize       Do not capitalize words [default: true]
+    -q, --quiet               Do not print entropy information
     -V, --version             Prints version information
 
 OPTIONS:
-    -l, --max-word-length <max_word_length>    Max word length [default: 6]
-    -w, --min-words <min_words>                Min number of words [default: 4]
     -d, --delimiter <delimiter>                Use custom delimiter [default: '-']
-    -f, --wordlist <wordlist>                  Specify custom wordlist [default: built-in]
+    -l, --max-word-length <max_word_length>    Max word length [default: 10]
+    -e, --min-entropy <min_entropy>            Minimal password entropy [default: 100]
+    -f, --wordlist <wordlist>                  Specify custom wordlist [default: built-in EFF]
 
 ARGS:
-    <min_passphrase_length>    Min passphrase length [default: 24]
+    <words>    Number of words in passphrase
 ```
