@@ -108,7 +108,7 @@ fn main() {
             }
         };
 
-        // Capitalize word if --capitalize was set and it add to list
+        // Capitalize word unless --no-capitalize was set and it add to list
         pwd.push(if capitalize {
             word_str.to_string().to_capitalized()
         } else {
