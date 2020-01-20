@@ -15,7 +15,15 @@ fn main() {
         .version("0.1")
         .about("Generate secure passphrases that are easy to type and remember")
         .author("Chris Aumann <me@chr4.org>")
-        .arg(Arg::with_name("min_passphrase_length").help("Min passphrase length [default: 24]"))
+        .arg(Arg::with_name("words").help("Number of words in passphrase"))
+        .arg(
+            Arg::with_name("min_entropy")
+                .short("e")
+                .long("min-entropy")
+                .help("Minimal password entropy [default: 100]")
+                .takes_value(true)
+                .conflicts_with("words"),
+        )
         .arg(
             Arg::with_name("max_word_length")
                 .short("l")
@@ -51,9 +59,8 @@ fn main() {
         )
         .get_matches();
 
-    let min_passphrase_length =
-        value_t!(args.value_of("min_passphrase_length"), usize).unwrap_or(24);
-    let min_words = min_passphrase_length / 5;
+    let words = value_t!(args.value_of("words"), usize).unwrap_or(8);
+    let min_entropy = value_t!(args.value_of("min_entropy"), f64).unwrap_or(100.0);
     let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(6);
     let append_number = !args.is_present("no_append_number");
     let capitalize = !args.is_present("no_capitalize");
@@ -72,10 +79,17 @@ fn main() {
         };
     }
 
-    // Choose random words from the wordlist and append them to the passphrase until length is met
     let mut pwd: Vec<String> = vec![];
     let mut rng = thread_rng();
-    while pwd.len() < min_words || pwd.join(delimiter).len() < min_passphrase_length {
+    let mut entropy: f64;
+    let wordlist_len = if args.is_present("wordlist") {
+        wordlist_file.len()
+    } else {
+        wordlist::WORDLIST.len()
+    };
+
+    // Choose random words from the wordlist and append them to the passphrase
+    loop {
         let word_str = if args.is_present("wordlist") {
             match wordlist_file.choose(&mut rng) {
                 Some(s) => s,
@@ -100,15 +114,55 @@ fn main() {
         } else {
             word_str.to_string()
         });
+
+        entropy = calculate_entropy(wordlist_len, pwd.len());
+
+        // Keep going until requirements are met
+        if args.is_present("words") {
+            if pwd.len() >= words {
+                break;
+            }
+        } else {
+            if entropy >= min_entropy {
+                break;
+            }
+        }
     }
 
-    // Append a random number from 0-9 if --add-number was specified
+    // Insert a random number from 0-9 at a random location if --add-number was specified
     if append_number {
-        pwd.push(thread_rng().gen_range(0, 10).to_string());
+        let no = thread_rng().gen_range(0, 10).to_string();
+        let i = thread_rng().gen_range(0, pwd.len());
+        pwd.insert(i, no);
+
+        // Update entropy, numeric value has 10 n
+        entropy += (10 as f64).log(2.0)
     }
 
     // Concatinate words with dashes and print the passphrase!
-    println!("{}", pwd.join(delimiter))
+    println!("{}", pwd.join(delimiter));
+
+    // Print entropy to stderr and evaluate password strength
+    eprint!("Entropy: {:0.2} bits ", entropy);
+
+    if entropy < 70.0 {
+        eprintln!("(not secure)");
+    } else if entropy < 95.0 {
+        eprintln!("(decent)");
+    } else if entropy < 120.0 {
+        eprintln!("(good)");
+    } else {
+        eprintln!("(paranoid)");
+    }
+}
+
+fn calculate_entropy(wordlist_length: usize, word_count: usize) -> f64 {
+    (wordlist_length as f64).log(2.0) * word_count as f64
+}
+
+#[test]
+fn calculate_entropy_test() {
+    assert_eq!(calculate_entropy(7776, 6), 77.54887502163469);
 }
 
 // Read in a wordlist, select all words that are longer than max_word_length characters.
