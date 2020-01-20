@@ -57,6 +57,12 @@ fn main() {
                 .long("no-append-number")
                 .help("Do not append a random number at the end"),
         )
+        .arg(
+            Arg::with_name("quiet")
+                .short("q")
+                .long("quiet")
+                .help("Do not print entropy information"),
+        )
         .get_matches();
 
     let words = value_t!(args.value_of("words"), usize).unwrap_or(8);
@@ -65,6 +71,7 @@ fn main() {
     let append_number = !args.is_present("no_append_number");
     let capitalize = !args.is_present("no_capitalize");
     let delimiter = args.value_of("delimiter").unwrap_or("-");
+    let quiet = args.is_present("quiet");
 
     // If a wordlist is specified, read it in
     let mut wordlist_file: Vec<String> = vec![];
@@ -143,16 +150,18 @@ fn main() {
     println!("{}", pwd.join(delimiter));
 
     // Print entropy to stderr and evaluate password strength
-    eprint!("Entropy: {:0.2} bits ", entropy);
+    if !quiet {
+        eprint!("Entropy: {:0.2} bits ", entropy);
 
-    if entropy < 70.0 {
-        eprintln!("(not secure)");
-    } else if entropy < 95.0 {
-        eprintln!("(decent)");
-    } else if entropy < 120.0 {
-        eprintln!("(good)");
-    } else {
-        eprintln!("(paranoid)");
+        if entropy < 70.0 {
+            eprintln!("(not secure)");
+        } else if entropy < 95.0 {
+            eprintln!("(decent)");
+        } else if entropy < 120.0 {
+            eprintln!("(good)");
+        } else {
+            eprintln!("(paranoid)");
+        }
     }
 }
 
