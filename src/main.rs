@@ -1,7 +1,9 @@
 extern crate clap;
+extern crate colored;
 extern crate rand;
 
 use clap::{value_t, App, Arg};
+use colored::*;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::fs::File;
@@ -146,21 +148,21 @@ fn main() {
         entropy += (10 as f64).log(2.0)
     }
 
-    // Concatinate words with dashes and print the passphrase!
+    // Concatinate words with dashes and print the passphrase
     println!("{}", pwd.join(delimiter));
 
     // Print entropy to stderr and evaluate password strength
     if !quiet {
-        eprint!("Entropy: {:0.2} bits ", entropy);
+        let entropy_str = format!("Entropy: {:0.2} bits", entropy);
 
         if entropy < 70.0 {
-            eprintln!("(not secure)");
+            eprintln!("😫 {} {}", entropy_str.bold(), "(not secure)".red().bold());
         } else if entropy < 95.0 {
-            eprintln!("(decent)");
+            eprintln!("🤨 {} {}", entropy_str.bold(), "(decent)".yellow().bold());
         } else if entropy < 120.0 {
-            eprintln!("(good)");
+            eprintln!("😊 {} {}", entropy_str.bold(), "(good)".green().bold());
         } else {
-            eprintln!("(paranoid)");
+            eprintln!("😎 {} {}", entropy_str.bold(), "(paranoid)".blue().bold());
         }
     }
 }
