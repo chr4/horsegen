@@ -1,6 +1,6 @@
 [package]
 name = "horsegen"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Chris Aumann <me@chr4.org>"]
 
 [dependencies]
