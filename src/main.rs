@@ -13,7 +13,7 @@ use std::process;
 mod wordlist;
 
 fn main() {
-    let args = App::new("Correct Horse Battery Staple --- Password Generator")
+    let args = App::new("Correct Horse Battery Staple --- Diceware Passphrase Generator")
         .version("0.3.1")
         .about("Generate secure passphrases that are easy to type and remember")
         .author("Chris Aumann <me@chr4.org>")
@@ -22,7 +22,7 @@ fn main() {
             Arg::with_name("min_entropy")
                 .short("e")
                 .long("min-entropy")
-                .help("Minimal password entropy [default: 100]")
+                .help("Minimal passphrase entropy [default: 100]")
                 .takes_value(true)
                 .conflicts_with("words"),
         )
@@ -151,7 +151,7 @@ fn main() {
     // Concatinate words with dashes and print the passphrase
     println!("{}", pwd.join(delimiter));
 
-    // Print entropy to stderr and evaluate password strength
+    // Print entropy to stderr and evaluate passphrase strength
     if !quiet {
         let entropy_str = format!("Entropy: {:0.2} bits", entropy);
 
