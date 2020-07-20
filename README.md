@@ -19,7 +19,7 @@ USAGE:
 FLAGS:
     -h, --help                Prints help information
     -n, --no-append-number    Do not append a random number at the end
-    -A, --no-capitalize       Do not capitalize words [default: true]
+    -A, --no-capitalize       Do not capitalize words [default: false]
     -q, --quiet               Do not print entropy information
     -V, --version             Prints version information
 
