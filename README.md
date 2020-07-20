@@ -1,6 +1,6 @@
 # Horsegen - Secure passphrases that are easy to type and remember
 
-Horsegen is a console password generator using the famous "correct horse battert staple" schema (hence the name).
+Horsegen is a console password generator using the famous diceware "correct horse battery staple" schema (hence the name).
 
 It is written in [Rust](https://rust-lang.org) and runs on Linux and macOS.
 
@@ -32,3 +32,9 @@ OPTIONS:
 ARGS:
     <words>    Number of words in passphrase
 ```
+
+
+## Similar tools
+
+- [diceware](https://github.com/ulif/diceware), written in Python
+- [pwgen](https://pwgen.sourceforge.io)
