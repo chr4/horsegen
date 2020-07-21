@@ -98,7 +98,7 @@ dependencies = [
 
 [[package]]
 name = "horsegen"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "clap 2.33.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "colored 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
