@@ -1,0 +1,24 @@
+name: build
+
+on:
+  push:
+    branches: [ $default-branch ] # TODO: Remove me
+    tags:
+      - 'v*' # Build tagged releases
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-linux-amd64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --release
+  macos:
+    runs-on: macos
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --release
