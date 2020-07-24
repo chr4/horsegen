@@ -1,9 +1,10 @@
 [package]
 name = "horsegen"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Chris Aumann <me@chr4.org>"]
 
 [dependencies]
 clap = "2"
 rand = "0"
 colored = "2"
+crossclip = "0"
