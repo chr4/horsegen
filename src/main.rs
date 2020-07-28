@@ -1,20 +1,23 @@
 extern crate clap;
+extern crate cli_clipboard;
 extern crate colored;
 extern crate rand;
 
 use clap::{value_t, App, Arg};
+use cli_clipboard::{ClipboardContext, ClipboardProvider};
 use colored::*;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
+use std::error::Error;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::process;
 
 mod wordlist;
 
 fn main() {
     let args = App::new("Correct Horse Battery Staple --- Diceware Passphrase Generator")
-        .version("0.3.1")
+        .version("0.3.2")
         .about("Generate secure passphrases that are easy to type and remember")
         .author("Chris Aumann <me@chr4.org>")
         .arg(Arg::with_name("words").help("Number of words in passphrase"))
@@ -65,6 +68,14 @@ fn main() {
                 .long("quiet")
                 .help("Do not print entropy information"),
         )
+        .arg(
+            Arg::with_name("clipboard")
+                .short("c")
+                .long("clipboard")
+                .help(
+                "Copy passphrase to clipboard instead of printing it to stdout [default: false]",
+            ),
+        )
         .get_matches();
 
     let words = value_t!(args.value_of("words"), usize).unwrap_or(8);
@@ -74,6 +85,7 @@ fn main() {
     let capitalize = !args.is_present("no_capitalize");
     let delimiter = args.value_of("delimiter").unwrap_or("-");
     let quiet = args.is_present("quiet");
+    let clipboard = args.is_present("clipboard");
 
     // If a wordlist is specified, read it in
     let mut wordlist_file: Vec<String> = vec![];
@@ -148,8 +160,17 @@ fn main() {
         entropy += (10 as f64).log(2.0)
     }
 
-    // Concatinate words with dashes and print the passphrase
-    println!("{}", pwd.join(delimiter));
+    // Concatinate words with dashes and print the passphrase!
+    let pwd_str = pwd.join(delimiter);
+
+    if clipboard {
+        copy_to_clipboard(pwd_str).unwrap_or_else(|err| {
+            eprintln!("Error copying to clipboard: {}", err);
+            process::exit(1);
+        });
+    } else {
+        println!("{}", pwd_str);
+    }
 
     // Print entropy to stderr and evaluate passphrase strength
     if !quiet {
@@ -178,7 +199,7 @@ fn calculate_entropy_test() {
 
 // Read in a wordlist, select all words that are longer than max_word_length characters.
 // Lines starting with a # will be skipped.
-fn read_wordlist(filename: &str, max_word_length: usize) -> Result<Vec<String>> {
+fn read_wordlist(filename: &str, max_word_length: usize) -> std::io::Result<Vec<String>> {
     let file = File::open(filename)?;
     Ok(BufReader::new(file)
         .lines()
@@ -186,6 +207,12 @@ fn read_wordlist(filename: &str, max_word_length: usize) -> Result<Vec<String>> 
         .filter(|l| !l.starts_with("#")) // Skip comments
         .filter(|l| l.len() <= max_word_length) // Filter out too long words
         .collect::<Vec<_>>())
+}
+
+fn copy_to_clipboard(s: String) -> Result<(), Box<dyn Error>> {
+    let mut ctx: ClipboardContext = ClipboardProvider::new()?;
+    ctx.set_contents(s)?;
+    Ok(())
 }
 
 // This was taken from https://stackoverflow.com/a/38343355
