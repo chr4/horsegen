@@ -2,85 +2,136 @@ name: build
 
 on:
   push:
-    tags:
-      - 'v*' # Build tagged releases
+    # tags:
+    #   - 'v*' # Build tagged releases
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-linux-amd64:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: |
-          sudo apt install xorg-dev libxcb-shape0-dev libxcb-xfixes0-dev
-          cargo build --release
-          bzip2 -f target/release/horsegen
-      - name: Upload
-        uses: actions/upload-artifact@v2
-        with:
-          name: release-linux-amd64
-          path: target/release/horsegen.bz2
+  # build-linux-amd64:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Build
+  #       run: |
+  #         sudo apt install xorg-dev libxcb-shape0-dev libxcb-xfixes0-dev
+  #         cargo build --release
+  #         bzip2 -f target/release/horsegen
+  #     - name: Upload
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: release-linux-amd64
+  #         path: target/release/horsegen.bz2
+  #
+  # build-macos:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Build
+  #       run: |
+  #         cargo build --release
+  #         bzip2 -f target/release/horsegen
+  #     - name: Upload
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: release-macos
+  #         path: target/release/horsegen.bz2
+  #
+  # release:
+  #   needs: [build-linux-amd64, build-macos]
+  #   name: Upload Release Assets
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download all releases
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         path: ./
+  #
+  #     - name: Get version
+  #       id: get_version
+  #       run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
+  #
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: ${{ github.ref }}
+  #         release_name: Release ${{ steps.get_version.outputs.VERSION }}
+  #         draft: false
+  #         prerelease: false
+  #
+  #     - name: Upload macOS release
+  #       id: upload-macos-release-asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #         asset_path: ./release-macos/horsegen.bz2
+  #         asset_name: horsegen-${{ steps.get_version.outputs.VERSION }}-macOS.bz2
+  #         asset_content_type: application/x-bzip2
+  #
+  #     - name: Upload Linux amd64 release
+  #       id: upload-linux-amd64-release-asset
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #         asset_path: ./release-linux-amd64/horsegen.bz2
+  #         asset_name: horsegen-${{ steps.get_version.outputs.VERSION }}-linux-amd64.bz2
+  #         asset_content_type: application/x-bzip2
 
-  build-macos:
+  build-macos-bottles:
+    runs-on: macos-latest
+    env:
+      HOMEBREW_NO_ANALYTICS: 1
+      HOMEBREW_NO_AUTO_UPDATE: 1
+    steps:
+      - name: Update Homebrew
+        run: brew update-reset
+      # - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+
+        # It seems like "brew test-bot" is building packages, then "brew test-bot --ci-upload" can upload it to bintray
+        # brew test-bot --ci-upload --git-name=davidchall --git-email=dhcrawley@gmail.com --bintray-org=davidchall;
+        #
+        # https://gist.github.com/maelvls/068af21911c7debc4655cdaa41bbf092
+        # brew test-bot --root-url=$TAP_BOTTLE_ROOT_URL
+        # brew test-bot --ci-upload --root-url=$TAP_BOTTLE_ROOT_URL --git-name=$GITHUB_USER --git-email=mael.valais@gmail.com --bintray-org=$TAP_BOTTLE_ORG --verbose;
+      - name: Build bottles
+        run: |
+          # Stolen from musl-cross
+          mkdir -p "$(dirname $(brew --repo ${{github.repository}}))"
+          cp -a "${{github.workspace}}" "$(brew --repo ${{github.repository}})"
+          mkdir "${{runner.temp}}/bottles"
+          cd "${{runner.temp}}/bottles"
+          brew test-bot --root-url=https://dl.bintray.com/chr4/horsegen chr4/horsegen
+
+  test-bot:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Build
+      - name: Set up Git repository
+        uses: actions/checkout@v2
+      - name: Run brew test-bot
         run: |
-          cargo build --release
-          bzip2 -f target/release/horsegen
-      - name: Upload
-        uses: actions/upload-artifact@v2
-        with:
-          name: release-macos
-          path: target/release/horsegen.bz2
+          # Stolen from https://github.com/kaoh/homebrew-globalplatform/blob/master/.github/workflows/main.yml
+          set -e
+          brew update
+          HOMEBREW_TAP_DIR="/usr/local/Homebrew/Library/Taps/chr4/homebrew-horsegen"
+          mkdir -p "$HOMEBREW_TAP_DIR"
+          rm -rf "$HOMEBREW_TAP_DIR"
+          ln -s "$PWD" "$HOMEBREW_TAP_DIR"
+          brew test-bot chr4/horsegen
 
-  release:
-    needs: [build-linux-amd64, build-macos]
-    name: Upload Release Assets
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all releases
-        uses: actions/download-artifact@v2
-        with:
-          path: ./
-
-      - name: Get version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ steps.get_version.outputs.VERSION }}
-          draft: false
-          prerelease: false
-
-      - name: Upload macOS release
-        id: upload-macos-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-macos/horsegen.bz2
-          asset_name: horsegen-${{ steps.get_version.outputs.VERSION }}-macOS.bz2
-          asset_content_type: application/x-bzip2
-
-      - name: Upload Linux amd64 release
-        id: upload-linux-amd64-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-linux-amd64/horsegen.bz2
-          asset_name: horsegen-${{ steps.get_version.outputs.VERSION }}-linux-amd64.bz2
-          asset_content_type: application/x-bzip2
+      # This doesn't seem to be what I want. I want this on bintray. But maybe this can skip the
+      # build steps above?
+      #
+      # - name: Upload bottles
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: bottles
+      #     path: ${{runner.temp}}/bottles

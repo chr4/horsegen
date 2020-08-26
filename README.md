@@ -35,8 +35,30 @@ ARGS:
     <words>    Number of words in passphrase
 ```
 
+## Installation
+
+Grab one of the binaries from [releases](https://github.com/chr4/horsegen/releases), or build it yourself using `cargo install`.
+
+On macOS, you can also use my [Homebrew](https://brew.sh) tap:
+
+```shell
+brew install chr4/horsegen/horsegen
+```
+
+Or
+
+```shell
+brew tap chr4/horsegen
+brew install horsegen
+```
+
 
 ## Similar tools
 
 - [diceware](https://github.com/ulif/diceware), written in Python
 - [pwgen](https://pwgen.sourceforge.io)
+
+# TODO
+- Upload packages to bintray, https://jonathanchang.org/blog/maintain-your-own-homebrew-repository-with-binary-bottles/
+- Update release version in my homebrew tap, see step 5 here: https://medium.com/@Extrawurst/github-actions-homebrew-%EF%B8%8F-2789ae5023fd
+- Package for debian
