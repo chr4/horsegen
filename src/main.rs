@@ -140,8 +140,8 @@ fn main() {
 
     // Insert a random number from 0-9 at a random location if --add-number was specified
     if append_number {
-        let no = thread_rng().gen_range(0, 10).to_string();
-        let i = thread_rng().gen_range(0, pwd.len());
+        let no = thread_rng().gen_range(0..10).to_string();
+        let i = thread_rng().gen_range(0..pwd.len());
         pwd.insert(i, no);
 
         // Update entropy, numeric value has 10 n
