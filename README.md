@@ -11,6 +11,12 @@ Uses the (built-in) EFF diceword wordlist by default, but can be used with other
 ## Usage
 
 ```
+$ horsegen
+Spinal-Foil-3-Gecko-Defuse-Clumsy-Groom-Try-Elbow
+😊 Entropy: 106.72 bits (good)
+```
+
+```
 Correct Horse Battery Staple --- Diceware Passphrase Generator 0.3
 Chris Aumann <me@chr4.org>
 Generate secure passphrases that are easy to type and remember
