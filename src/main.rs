@@ -37,7 +37,7 @@ fn main() {
             Arg::with_name("no_capitalize")
                 .short("A")
                 .long("no-capitalize")
-                .help("Do not capitalize words [default: false]"),
+                .help("Do not capitalize words"),
         )
         .arg(
             Arg::with_name("wordlist")
