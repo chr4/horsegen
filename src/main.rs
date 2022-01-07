@@ -13,7 +13,7 @@ const     ENTROPY_NUMERIC_VALUE: f64 = 3.3219280948873626;
 
 fn main() {
     let args = App::new("Correct Horse Battery Staple --- Diceware Passphrase Generator")
-        .version("0.3.2")
+        .version("0.3.3")
         .about("Generate secure passphrases that are easy to type and remember")
         .author("Chris Aumann <me@chr4.org>")
         .arg(Arg::with_name("words").help("Number of words in passphrase"))
