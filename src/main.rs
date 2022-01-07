@@ -8,6 +8,9 @@ use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::process;
 
+// Update entropy, numeric value has (10 as f64).log(2.0)
+const     ENTROPY_NUMERIC_VALUE: f64 = 3.3219280948873626;
+
 fn main() {
     let args = App::new("Correct Horse Battery Staple --- Diceware Passphrase Generator")
         .version("0.3.2")
@@ -118,7 +121,13 @@ fn main() {
                 break;
             }
         } else {
-            if entropy >= min_entropy {
+            // If append_number is set, factor in additional entropy, even though the number is
+            // only added afterwards
+            let required_entropy = if append_number {
+                 min_entropy - ENTROPY_NUMERIC_VALUE
+            } else { min_entropy };
+
+            if entropy >= required_entropy {
                 break;
             }
         }
@@ -130,8 +139,7 @@ fn main() {
         let i = thread_rng().gen_range(0..pwd.len());
         pwd.insert(i, no);
 
-        // Update entropy, numeric value has 10 n
-        entropy += (10 as f64).log(2.0)
+        entropy += ENTROPY_NUMERIC_VALUE;
     }
 
     // Concatinate words with dashes and print the passphrase
