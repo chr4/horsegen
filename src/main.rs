@@ -91,7 +91,7 @@ fn main() {
     // Lines starting with a # will be skipped.
     let wordlist = wordlist_file
         .lines()
-        .filter(|l| !l.starts_with("#")) // Skip comments
+        .filter(|l| !l.starts_with('#')) // Skip comments
         .filter(|l| l.len() <= max_word_length) // Filter out too long words
         .collect::<Vec<_>>();
 
