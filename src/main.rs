@@ -9,7 +9,7 @@ use rand::{thread_rng, Rng};
 use std::process;
 
 // Update entropy, numeric value has (10 as f64).log(2.0)
-const     ENTROPY_NUMERIC_VALUE: f64 = 3.3219280948873626;
+const ENTROPY_NUMERIC_VALUE: f64 = 3.3219280948873626;
 
 fn main() {
     let args = App::new("Correct Horse Battery Staple --- Diceware Passphrase Generator")
@@ -124,8 +124,10 @@ fn main() {
             // If append_number is set, factor in additional entropy, even though the number is
             // only added afterwards
             let required_entropy = if append_number {
-                 min_entropy - ENTROPY_NUMERIC_VALUE
-            } else { min_entropy };
+                min_entropy - ENTROPY_NUMERIC_VALUE
+            } else {
+                min_entropy
+            };
 
             if entropy >= required_entropy {
                 break;
