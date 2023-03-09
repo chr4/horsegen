@@ -7,3 +7,6 @@ authors = ["Chris Aumann <me@chr4.org>"]
 clap = "2"
 rand = "0"
 colored = "2"
+
+[profile.release]
+strip = true
