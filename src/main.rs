@@ -19,7 +19,7 @@ fn main() {
         .arg(Arg::with_name("words").help("Number of words in passphrase"))
         .arg(
             Arg::with_name("min_entropy")
-                .short("e")
+                .short('e')
                 .long("min-entropy")
                 .help("Minimal passphrase entropy [default: 100]")
                 .takes_value(true)
@@ -27,40 +27,40 @@ fn main() {
         )
         .arg(
             Arg::with_name("max_word_length")
-                .short("l")
+                .short('l')
                 .long("max-word-length")
                 .help("Max word length [default: 10]")
                 .takes_value(true),
         )
         .arg(
             Arg::with_name("no_capitalize")
-                .short("A")
+                .short('A')
                 .long("no-capitalize")
                 .help("Do not capitalize words"),
         )
         .arg(
             Arg::with_name("wordlist")
-                .short("f")
+                .short('f')
                 .long("wordlist")
                 .help("Specify custom wordlist [default: built-in EFF]")
                 .takes_value(true),
         )
         .arg(
             Arg::with_name("delimiter")
-                .short("d")
+                .short('d')
                 .long("delimiter")
                 .help("Use custom delimiter [default: '-']")
                 .takes_value(true),
         )
         .arg(
             Arg::with_name("no_append_number")
-                .short("n")
+                .short('n')
                 .long("no-append-number")
                 .help("Do not append a random number at the end"),
         )
         .arg(
             Arg::with_name("quiet")
-                .short("q")
+                .short('q')
                 .long("quiet")
                 .help("Do not print entropy information"),
         )

@@ -4,7 +4,7 @@ version = "0.3.3"
 authors = ["Chris Aumann <me@chr4.org>"]
 
 [dependencies]
-clap = "2"
+clap = "3"
 rand = "0"
 owo-colors = "3"
 rust-embed = "8"
