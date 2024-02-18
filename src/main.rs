@@ -2,7 +2,7 @@ extern crate clap;
 extern crate owo_colors;
 extern crate rand;
 
-use clap::{value_t, App, Arg};
+use clap::{value_parser, Arg, ArgAction, Command};
 use owo_colors::OwoColorize;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
@@ -12,79 +12,85 @@ use std::process;
 const ENTROPY_NUMERIC_VALUE: f64 = 3.3219280948873626;
 
 fn main() {
-    let args = App::new("Correct Horse Battery Staple --- Diceware Passphrase Generator")
+    let args = Command::new("Correct Horse Battery Staple --- Diceware Passphrase Generator")
         .version("0.3.3")
         .about("Generate secure passphrases that are easy to type and remember")
         .author("Chris Aumann <me@chr4.org>")
-        .arg(Arg::with_name("words").help("Number of words in passphrase"))
         .arg(
-            Arg::with_name("min_entropy")
+            Arg::new("words")
+                .help("Number of words in passphrase")
+                .value_parser(value_parser!(usize)),
+        )
+        .arg(
+            Arg::new("min_entropy")
                 .short('e')
                 .long("min-entropy")
                 .help("Minimal passphrase entropy [default: 100]")
-                .takes_value(true)
+                .value_parser(value_parser!(f64))
+                .default_value("100.0")
                 .conflicts_with("words"),
         )
         .arg(
-            Arg::with_name("max_word_length")
+            Arg::new("max_word_length")
                 .short('l')
                 .long("max-word-length")
-                .help("Max word length [default: 10]")
-                .takes_value(true),
+                .value_parser(value_parser!(usize))
+                .default_value("10")
+                .help("Max word length"),
         )
         .arg(
-            Arg::with_name("no_capitalize")
+            Arg::new("no_capitalize")
                 .short('A')
                 .long("no-capitalize")
+                .action(ArgAction::SetFalse)
                 .help("Do not capitalize words"),
         )
         .arg(
-            Arg::with_name("wordlist")
+            Arg::new("wordlist")
                 .short('f')
                 .long("wordlist")
-                .help("Specify custom wordlist [default: built-in EFF]")
-                .takes_value(true),
+                .help("Specify custom wordlist [default: built-in EFF]"),
         )
         .arg(
-            Arg::with_name("delimiter")
+            Arg::new("delimiter")
                 .short('d')
                 .long("delimiter")
-                .help("Use custom delimiter [default: '-']")
-                .takes_value(true),
+                .default_value("-")
+                .help("Use custom delimiter"),
         )
         .arg(
-            Arg::with_name("no_append_number")
+            Arg::new("no_append_number")
                 .short('n')
                 .long("no-append-number")
+                .action(ArgAction::SetFalse)
                 .help("Do not append a random number at the end"),
         )
         .arg(
-            Arg::with_name("quiet")
+            Arg::new("quiet")
                 .short('q')
                 .long("quiet")
+                .action(ArgAction::SetTrue)
                 .help("Do not print entropy information"),
         )
         .get_matches();
 
-    let words = value_t!(args.value_of("words"), usize).unwrap_or(8);
-    let min_entropy = value_t!(args.value_of("min_entropy"), f64).unwrap_or(100.0);
-    let max_word_length = value_t!(args.value_of("max_word_length"), usize).unwrap_or(10);
-    let append_number = !args.is_present("no_append_number");
-    let capitalize = !args.is_present("no_capitalize");
-    let delimiter = args.value_of("delimiter").unwrap_or("-");
-    let quiet = args.is_present("quiet");
+    let words = args.get_one("words");
+    let min_entropy = args.get_one("min_entropy").unwrap();
+    let max_word_length = args.get_one("max_word_length").unwrap();
+    let append_number = args.get_flag("no_append_number");
+    let capitalize = args.get_flag("no_capitalize");
+    let delimiter = args.get_one::<String>("delimiter").unwrap();
+    let quiet = args.get_flag("quiet");
 
-    let wordlist_file = if args.is_present("wordlist") {
-        let filename = args.value_of("wordlist").unwrap_or("");
-        match std::fs::read_to_string(filename) {
+    let wordlist_file = match args.get_one::<String>("wordlist") {
+        Some(filename) => match std::fs::read_to_string(filename) {
             Ok(f) => f,
             Err(e) => {
                 eprintln!("Error reading in wordlist: {}", e);
                 process::exit(1);
             }
-        }
-    } else {
-        include_str!("../eff_large_wordlist.txt").to_string()
+        },
+        None => include_str!("../eff_large_wordlist.txt").to_string(),
     };
 
     // Read in a wordlist, select all words that are longer than max_word_length characters.
@@ -92,7 +98,7 @@ fn main() {
     let wordlist = wordlist_file
         .lines()
         .filter(|l| !l.starts_with('#')) // Skip comments
-        .filter(|l| l.len() <= max_word_length) // Filter out too long words
+        .filter(|l| l.len() <= *max_word_length) // Filter out too long words
         .collect::<Vec<_>>();
 
     let mut pwd: Vec<String> = vec![];
@@ -116,21 +122,24 @@ fn main() {
         entropy = calculate_entropy(wordlist.len(), pwd.len());
 
         // Keep going until requirements are met
-        if args.is_present("words") {
-            if pwd.len() >= words {
-                break;
+        match words {
+            Some(w) => {
+                if pwd.len() >= *w {
+                    break;
+                }
             }
-        } else {
-            // If append_number is set, factor in additional entropy, even though the number is
-            // only added afterwards
-            let required_entropy = if append_number {
-                min_entropy - ENTROPY_NUMERIC_VALUE
-            } else {
-                min_entropy
-            };
+            None => {
+                // If append_number is set, factor in additional entropy, even though the number is
+                // only added afterwards
+                let required_entropy = if append_number {
+                    *min_entropy - ENTROPY_NUMERIC_VALUE
+                } else {
+                    *min_entropy
+                };
 
-            if entropy >= required_entropy {
-                break;
+                if entropy >= required_entropy {
+                    break;
+                }
             }
         }
     }
