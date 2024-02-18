@@ -6,7 +6,7 @@ authors = ["Chris Aumann <me@chr4.org>"]
 [dependencies]
 clap = "2"
 rand = "0"
-colored = "2"
+owo-colors = "3"
 rust-embed = "8"
 
 [profile.release]

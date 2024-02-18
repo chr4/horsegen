@@ -1,9 +1,9 @@
 extern crate clap;
-extern crate colored;
+extern crate owo_colors;
 extern crate rand;
 
 use clap::{value_t, App, Arg};
-use colored::*;
+use owo_colors::OwoColorize;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::process;
